@@ -8,5 +8,17 @@
 </head>
 <body>
     <h1>Welcome to this shit :(</h1>
+    <script src="socket.io/socket.io.js"></script>
+    <script>
+        let socket = io();
+        //Display a msg when the client connects to server
+        socket.on('connect', () => {
+            console.log('Connected to server!');
+        });
+
+        socket.on('disconnect', () => {
+            console.log('disconnected from server');
+        });
+    </script>
 </body>
 </html>
