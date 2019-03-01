@@ -36,6 +36,13 @@ io.on('connection', (socket) => {
     //Listen for an event, when a message is created by the client
     socket.on('createMessage', (message) => {
         console.log(message);
+
+        io.emit('newMessage', 
+        {
+            from: message.from,
+            text: message.text,
+            createdAt: new Date().getTime()
+        });
     });
 
 });
