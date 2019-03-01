@@ -13,9 +13,9 @@ socket.on('newMessage', function(message){
     console.log(message);
 });
 
-socket.emit('createMessage', 
-{
-    from: "JackBauer",
-    text: "Damn it! I need your help!",
+// socket.emit('createMessage', 
+// {
+//     from: "JackBauer",
+//     text: "Damn it! I need your help!",
     
-});
+// });

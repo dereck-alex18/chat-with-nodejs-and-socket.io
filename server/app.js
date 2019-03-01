@@ -25,18 +25,27 @@ io.on('connection', (socket) => {
         console.log('User disconnected from server!');
     });
 
-    //Creates a newMessage event
+    //When a new user joins the chat, a welcome message is sent to him
     socket.emit('newMessage', 
     {
-       from: "JohnDoe",
-       text: "Hi there!",
-       createdAt: 123
+       from: "Admin",
+       text: "Welcome to the chat app! :)",
+       createdAt: new Date().getTime()
+    });
+
+    //The following message will be shown to all users but the current one
+    socket.broadcast.emit('newMessage', 
+    {
+        from: "Admin",
+        text: "New user joined the chat!",
+        createdAt: new Date().getTime()
     });
 
     //Listen for an event, when a message is created by the client
     socket.on('createMessage', (message) => {
         console.log(message);
 
+        //When a new message is sent by an user, it will be sent to all other users
         io.emit('newMessage', 
         {
             from: message.from,
