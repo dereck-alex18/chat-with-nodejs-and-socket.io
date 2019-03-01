@@ -19,11 +19,25 @@ app.use(express.static(publicPath));
 //Listen for clients
 io.on('connection', (socket) => {
     console.log('New user connected!');
-
+    
     //Handles the event when a user disconnect from server
     socket.on('disconnect', () => {
         console.log('User disconnected from server!');
     });
+
+    //Creates a newMessage event
+    socket.emit('newMessage', 
+    {
+       from: "JohnDoe",
+       text: "Hi there!",
+       createdAt: 123
+    });
+
+    //Listen for an event, when a message is created by the client
+    socket.on('createMessage', (message) => {
+        console.log(message);
+    });
+
 });
 
 server.listen(port, () => {
