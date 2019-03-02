@@ -6,13 +6,12 @@ const http = require('http');
 const app = express();
 //setting the port
 let port = process.env.PORT || 3000;
-//creating an http server
+//creating an http server so it can be sent to socket.io
 let server = http.createServer(app);
 //adding socket io to the server
 let io = socketIO(server);
 //setting the path to the frontend
 const publicPath = path.join(__dirname, '../public');
-
 
 app.use(express.static(publicPath));
 
@@ -22,36 +21,28 @@ io.on('connection', (socket) => {
     
     //Handles the event when a user disconnect from server
     socket.on('disconnect', () => {
-        console.log('User disconnected from server!');
+        socket.broadcast.emit('newMessage', 'An user has left!');
     });
 
     //When a new user joins the chat, a welcome message is sent to him
-    socket.emit('newMessage', 
-    {
-       from: "Admin",
-       text: "Welcome to the chat app! :)",
-       createdAt: new Date().getTime()
-    });
+    socket.emit('newMessage', 'Welcome to the chat app :)' );
 
     //The following message will be shown to all users but the current one
-    socket.broadcast.emit('newMessage', 
-    {
-        from: "Admin",
-        text: "New user joined the chat!",
-        createdAt: new Date().getTime()
-    });
+    socket.broadcast.emit('newMessage', 'A new user joined the chat!');
 
     //Listen for an event, when a message is created by the client
-    socket.on('createMessage', (message) => {
-        console.log(message);
-
+    socket.on('createMessage', (message, callback) => {
         //When a new message is sent by an user, it will be sent to all other users
-        io.emit('newMessage', 
-        {
-            from: message.from,
-            text: message.text,
-            createdAt: new Date().getTime()
-        });
+        io.emit('newMessage', message);
+        callback(); //It tells the client that everything went well
+    });
+
+    //Listen for a shareLoc (share location) event. 
+    socket.on('shareLoc', (pos, callback, test) => {
+        // When an user share its location it will be sent to the other users through an url
+        io.emit('newMessage', `https://www.google.com/maps?q=${pos.lat},${pos.lng}`);
+        callback(); //It tells the client that everything went well
+        
     });
 
 });
