@@ -1,30 +1,42 @@
 let socket = io();
 
-const userForm = document.querySelector('#user');
+//elements
+//const userForm = document.querySelector('#user');
 const textForm = document.querySelector('#text');
 const submitBt = document.querySelector('#submitBt');
 const shareLocBtn = document.querySelector('#shareLoc');
+const msgBox = document.querySelector('#messages-box');
+
+//templates
+const msgTemplate = document.querySelector('#message-template').innerHTML;
+const locTemplate = document.querySelector('#loc-template').innerHTML;
 
 //Listen for a click on submit button
 submitBt.addEventListener('click', (e) => {
     e.preventDefault();
+    //disable submitBt to avoid the message being sent twice
+    submitBt.setAttribute('disabled', 'disabled');
     //sends the message to the server
-    const message = {from: userForm.value, text: textForm.value};
+    const message = {from: 'User', text: textForm.value};
     socket.emit('createMessage', message, (error) => {
         //This function is called when the data is sent correctly
         if(error){
             return console.log(error);
         }
         console.log('Delivered!');
+        //enable submit bt again
+        submitBt.removeAttribute('disabled', 'disabled');
+        //To keep the cursor in text form
+        textForm.focus();
+        textForm.value = '';
     });
-    
-    userForm.value = '';
-    textForm.value = '';
-
 });
 
 //Listen for a click on share location button
 shareLocBtn.addEventListener('click', () => {
+    //disable shareLocBtn to prevent the location from being sent twice
+    shareLocBtn.setAttribute('disabled', 'disabled');
+    
     //If the browser do not support this feature, an alert will be shown
     if(!navigator.geolocation){
         return alert("Geolocation not available on your browser!");
@@ -36,6 +48,8 @@ shareLocBtn.addEventListener('click', () => {
         socket.emit('shareLoc', coords, () => {
             //This function is called when the data is sent correctly
             console.log('delivered!');
+            //enable shareLocBtn
+            shareLocBtn.removeAttribute('disabled', 'disabled');
         });   
     });
 });
@@ -52,7 +66,24 @@ socket.on('disconnect', function() {
 //it's fired when a new message from other user is sent to the server
 socket.on('newMessage', function(message){
     console.log("New message received!");
-    console.log(`${message.from || 'admin'} says: ${message.text || message}`);
+   //The lines bellow insert the message in the message-box by redering the Mustache template
+    const html = Mustache.render(msgTemplate, {
+        user: message.from,
+        message: message.text,
+        createdAt: moment(message.createdAt).format('h:mm a')
+    });
+    msgBox.insertAdjacentHTML('beforeend', html);
+});
+
+//Listen for the user's location
+socket.on('shareLocMsg', (message) => {
+    //Render the Mustache template for the locarion and insert the url dynamically
+    const html = Mustache.render(locTemplate, {
+        url: message.url,
+        createdAt: moment(message.createdAt).format('h:mm a')
+    })
+    //Insert the location in the message box
+    msgBox.insertAdjacentHTML('beforeend', html);
 });
 
 
