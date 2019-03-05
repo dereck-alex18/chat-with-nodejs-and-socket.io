@@ -6,10 +6,12 @@ const textForm = document.querySelector('#text');
 const submitBt = document.querySelector('#submitBt');
 const shareLocBtn = document.querySelector('#shareLoc');
 const msgBox = document.querySelector('#messages-box');
+const recordBt = document.querySelector('#recordBt');
 
 //templates
 const msgTemplate = document.querySelector('#message-template').innerHTML;
 const locTemplate = document.querySelector('#loc-template').innerHTML;
+const audioTemplate = document.querySelector('#audio-template').innerHTML;
 
 //Listen for a click on submit button
 submitBt.addEventListener('click', (e) => {
@@ -86,4 +88,50 @@ socket.on('shareLocMsg', (message) => {
     msgBox.insertAdjacentHTML('beforeend', html);
 });
 
+//Listen for an audio message
+socket.on('audioMsg', (audioMsg) => {
+    //when an audio message is received a new audio tag with the audio is created 
+    //and attatched to the chat
+    let audioBlob = new Blob([audioMsg.audioMsg]);
+    let url = URL.createObjectURL(audioBlob);
+    const html = Mustache.render(audioTemplate, 
+        {
+            audioURL: url,
+            createdAt: moment(audioMsg.createdAt).format('h:mm a')
+        });
+    msgBox.insertAdjacentHTML('beforeend', html);
+    
+});
 
+recordBt.addEventListener('click', recordAudioMsg);
+
+let audioChunks = []; //This array will contain the sample of the audio
+let recorder, gumStream;
+
+//The function bellow handles recording an audio message
+function recordAudioMsg(){
+    if (recorder && recorder.state == "recording") {
+        //When the app is recording and recordBt is clicked again, it will stop the recording
+        recorder.stop();
+        gumStream.getAudioTracks()[0].stop();
+        audioChunks = [];
+        recordBt.textContent = "Audio";
+    } else {
+        //Otherwise it starts the recording process
+        recordBt.textContent = "Stop";
+        navigator.mediaDevices.getUserMedia({
+            audio: true
+        }).then(function(stream) {
+            gumStream = stream;
+            recorder = new MediaRecorder(stream);
+            recorder.ondataavailable = function(e) {
+                audioChunks.push(e.data); //Save the audio samples in this array
+                socket.emit('audioMsg', audioChunks[0], () => {
+                    //This callback is called when teh server deliver the audio
+                    console.log('Delivered!');
+                });
+            };
+            recorder.start();
+        });
+    }
+}

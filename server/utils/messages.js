@@ -14,7 +14,15 @@ const formatShareLoc = (url) => {
     }
 }
 
+const formatAudioMsg = (audioMsg) => {
+    return {
+        audioMsg,
+        createdAt: new Date().getTime()
+    }
+}
+
 module.exports = {
     formatMessages,
-    formatShareLoc
+    formatShareLoc,
+    formatAudioMsg
 }

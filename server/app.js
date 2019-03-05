@@ -2,7 +2,7 @@ const express = require('express');
 const path = require('path');
 const socketIO = require('socket.io');
 const http = require('http');
-const {formatMessages, formatShareLoc} = require('./utils/messages');
+const {formatMessages, formatShareLoc, formatAudioMsg} = require('./utils/messages');
 
 const app = express();
 //setting the port
@@ -45,6 +45,13 @@ io.on('connection', (socket) => {
         io.emit('shareLocMsg', formatShareLoc(`https://www.google.com/maps?q=${pos.lat},${pos.lng}`));
         callback(); //It tells the client that everything went well
         
+    });
+    
+    //Listen for an audioMsg event
+    socket.on('audioMsg', (audioMsg, callback) => {
+        //when a client sends an audio message it will be sent to the other clients
+        io.emit('audioMsg', formatAudioMsg(audioMsg));
+        callback();
     });
 
 });

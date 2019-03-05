@@ -35,10 +35,12 @@ input {
     border: 1px solid #eeeeee;
     padding: 12px;
     outline: none;
+    
 }
 
 button {
     cursor: pointer;
+    margin-right: 3px;
     padding: 12px;
     background: #7C5CBF;
     border: none;

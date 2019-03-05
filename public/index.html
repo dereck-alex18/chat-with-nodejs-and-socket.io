@@ -19,9 +19,11 @@
                 <div class="compose">
                     <form>
                         <input type="text" id="text" placeholder="text">
+                        
+                    </form>
                         <button id="submitBt">Send</button>
-                        </form>
-                        <button id="shareLoc">Share Location</button>    
+                        <button id="shareLoc">Share Location</button> 
+                        <button id="recordBt">Audio</button>   
                 </div>
             </div>
         
@@ -45,6 +47,16 @@
                     <span class="message__meta">{{createdAt}}</span>
                 </p>
                 <p><a href={{url}} target="_blank">My current location</a></p>
+            </div>
+        </script>
+
+        <script id="audio-template" type="text/html">
+            <div class="audio">
+                <p>
+                    <span class="message__name">User</span>
+                    <span class="message__meta">{{createdAt}}</span>
+                </p>
+                <p><audio controls src="{{audioURL}}"></audio></p>
             </div>
         </script>
 
