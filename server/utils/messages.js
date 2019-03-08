@@ -7,15 +7,17 @@ const formatMessages = (from, text) => {
     }
 }
 
-const formatShareLoc = (url) => {
+const formatShareLoc = (from, url) => {
     return {
+        from,
         url,
         createdAt: new Date().getTime()
     }
 }
 
-const formatAudioMsg = (audioMsg) => {
+const formatAudioMsg = (from, audioMsg) => {
     return {
+        from,
         audioMsg,
         createdAt: new Date().getTime()
     }

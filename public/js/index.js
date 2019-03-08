@@ -13,6 +13,10 @@ const msgTemplate = document.querySelector('#message-template').innerHTML;
 const locTemplate = document.querySelector('#loc-template').innerHTML;
 const audioTemplate = document.querySelector('#audio-template').innerHTML;
 
+//Get the username the the room that the user wants to join
+const {username, room} = Qs.parse(location.search, { ignoreQueryPrefix: true })
+console.log(username, room);
+
 //Listen for a click on submit button
 submitBt.addEventListener('click', (e) => {
     e.preventDefault();
@@ -20,7 +24,7 @@ submitBt.addEventListener('click', (e) => {
     submitBt.setAttribute('disabled', 'disabled');
     //sends the message to the server
     const message = {from: 'User', text: textForm.value};
-    socket.emit('createMessage', message, (error) => {
+    socket.emit('createMessage', message, username, room, (error) => {
         //This function is called when the data is sent correctly
         if(error){
             return console.log(error);
@@ -47,7 +51,7 @@ shareLocBtn.addEventListener('click', () => {
     navigator.geolocation.getCurrentPosition((pos) => {
         let coords = {lat: pos.coords.latitude, lng: pos.coords.longitude};
         
-        socket.emit('shareLoc', coords, () => {
+        socket.emit('shareLoc', coords, username, room, () => {
             //This function is called when the data is sent correctly
             console.log('delivered!');
             //enable shareLocBtn
@@ -81,6 +85,7 @@ socket.on('newMessage', function(message){
 socket.on('shareLocMsg', (message) => {
     //Render the Mustache template for the locarion and insert the url dynamically
     const html = Mustache.render(locTemplate, {
+        username: message.from,
         url: message.url,
         createdAt: moment(message.createdAt).format('h:mm a')
     })
@@ -96,6 +101,7 @@ socket.on('audioMsg', (audioMsg) => {
     let url = URL.createObjectURL(audioBlob);
     const html = Mustache.render(audioTemplate, 
         {
+            username: audioMsg.from,
             audioURL: url,
             createdAt: moment(audioMsg.createdAt).format('h:mm a')
         });
@@ -126,7 +132,7 @@ function recordAudioMsg(){
             recorder = new MediaRecorder(stream);
             recorder.ondataavailable = function(e) {
                 audioChunks.push(e.data); //Save the audio samples in this array
-                socket.emit('audioMsg', audioChunks[0], () => {
+                socket.emit('audioMsg', audioChunks[0], username, room, () => {
                     //This callback is called when teh server deliver the audio
                     console.log('Delivered!');
                 });
@@ -135,3 +141,5 @@ function recordAudioMsg(){
         });
     }
 }
+
+socket.emit("join", {username, room});
