@@ -24,7 +24,7 @@ submitBt.addEventListener('click', (e) => {
     submitBt.setAttribute('disabled', 'disabled');
     //sends the message to the server
     const message = {from: 'User', text: textForm.value};
-    socket.emit('createMessage', message, username, room, (error) => {
+    socket.emit('createMessage', message, (error) => {
         //This function is called when the data is sent correctly
         if(error){
             return console.log(error);
@@ -51,7 +51,7 @@ shareLocBtn.addEventListener('click', () => {
     navigator.geolocation.getCurrentPosition((pos) => {
         let coords = {lat: pos.coords.latitude, lng: pos.coords.longitude};
         
-        socket.emit('shareLoc', coords, username, room, () => {
+        socket.emit('shareLoc', coords, () => {
             //This function is called when the data is sent correctly
             console.log('delivered!');
             //enable shareLocBtn
@@ -63,6 +63,7 @@ shareLocBtn.addEventListener('click', () => {
 //Display a msg when the client connects to server
 socket.on('connect', function(){
     console.log('Connected to server!');
+    
 });
 
 socket.on('disconnect', function() {
@@ -132,7 +133,7 @@ function recordAudioMsg(){
             recorder = new MediaRecorder(stream);
             recorder.ondataavailable = function(e) {
                 audioChunks.push(e.data); //Save the audio samples in this array
-                socket.emit('audioMsg', audioChunks[0], username, room, () => {
+                socket.emit('audioMsg', audioChunks[0], () => {
                     //This callback is called when teh server deliver the audio
                     console.log('Delivered!');
                 });
@@ -142,4 +143,11 @@ function recordAudioMsg(){
     }
 }
 
-socket.emit("join", {username, room});
+socket.emit("join", {username, room}, (error) => {
+    //If there is an error it will be redirected to the initial form
+    if(error){
+        alert(error);
+        location.href = '/';
+    }
+    
+});

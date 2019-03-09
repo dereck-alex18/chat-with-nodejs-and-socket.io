@@ -3,6 +3,7 @@ const path = require('path');
 const socketIO = require('socket.io');
 const http = require('http');
 const {formatMessages, formatShareLoc, formatAudioMsg} = require('./utils/messages');
+const {addUser, removeUser, getUser, getUsersInRoom} = require('./utils/users');
 
 const app = express();
 //setting the port
@@ -20,15 +21,21 @@ app.use(express.static(publicPath));
 //Listen for clients
 io.on('connection', (socket) => {
     console.log('New user connected!');
-    //This variable will save who is the connected current user
-    let currentUser;    
     //Handles the event when a user disconnect from server
     socket.on('disconnect', () => {
-        socket.broadcast.emit('newMessage', formatMessages('Admin', `${currentUser} has left!`));
+        const user = removeUser(socket.id);
+        //Makesure the user exist in order to not crash the server side code
+        if(user){
+            socket.broadcast.to(user.room).emit('newMessage', formatMessages('Admin', `${user.username} has left!`));
+        }
+       
     });
 
    //Listen for an event, when a message is created by the client
-    socket.on('createMessage', (message, username, room, callback) => {
+    socket.on('createMessage', (message, callback) => {
+        //get the username and from from getUser function
+        const {username, room} = getUser(socket.id);
+        
         socket.join(room);
         //create an message object with who sent it, the message itself and when it was sent
         message = formatMessages(username, message.text);
@@ -38,7 +45,10 @@ io.on('connection', (socket) => {
     });
 
     //Listen for a shareLoc (share location) event. 
-    socket.on('shareLoc', (pos, username, room, callback) => {
+    socket.on('shareLoc', (pos, callback) => {
+        //get the username and from from getUser function
+        const {username, room} = getUser(socket.id);
+
         socket.join(room);
         // When an user share its location it will be sent to the other users through an url
         io.to(room).emit('shareLocMsg', formatShareLoc(username, `https://www.google.com/maps?q=${pos.lat},${pos.lng}`));
@@ -47,7 +57,10 @@ io.on('connection', (socket) => {
     });
     
     //Listen for an audioMsg event
-    socket.on('audioMsg', (audioMsg,username, room, callback) => {
+    socket.on('audioMsg', (audioMsg, callback) => {
+        //get the username and from from getUser function
+        const {username, room} = getUser(socket.id);
+        
         //make sure the message is sent only to the current room
         socket.join(room);
         //when a client sends an audio message it will be sent to the other clients
@@ -55,14 +68,21 @@ io.on('connection', (socket) => {
         callback();
     });
 
-    socket.on("join", ({username, room}) => {
-        socket.join(room);
+    socket.on("join", ({username, room}, callback) => {
+        const {user, error} = addUser({id: socket.id, username, room});
+        //if there is an error it will be passed to the client through a cb function
+        if(error){
+            return callback(error);
+        }
+
+        socket.join(user.room);
         currentUser = username
         //When a new user joins the chat, a welcome message is sent to him
-        socket.emit('newMessage', formatMessages('Admin', `Welcome ${username} :)`));
+        socket.emit('newMessage', formatMessages('Admin', `Welcome ${user.username} :)`));
         //The following message will be shown to all users but the current one
-        socket.broadcast.to(room).emit('newMessage', formatMessages('Admin', `${username} joined the chat!`));
+        socket.broadcast.to(user.room).emit('newMessage', formatMessages('Admin', `${user.username} joined the chat!`));
         
+        callback();
     });
 
 });
