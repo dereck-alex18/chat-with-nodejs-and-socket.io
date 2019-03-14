@@ -14,8 +14,6 @@ let server = http.createServer(app);
 let io = socketIO(server);
 //setting the path to the frontend
 const publicPath = path.join(__dirname, '../public');
-
-
 app.use(express.static(publicPath));
 
 //Listen for clients
@@ -27,28 +25,38 @@ io.on('connection', (socket) => {
         //Makesure the user exist in order to not crash the server side code
         if(user){
             socket.broadcast.to(user.room).emit('newMessage', formatMessages('Admin', `${user.username} has left!`));
+            //This event will update the users' list on the client side
+            io.to(user.room).emit("roomData", {room: user.room, users: getUsersInRoom(user.room)});
         }
        
     });
 
    //Listen for an event, when a message is created by the client
     socket.on('createMessage', (message, callback) => {
-        //get the username and from from getUser function
-        const {username, room} = getUser(socket.id);
-        
-        socket.join(room);
+        //get the user from getUser function
+        const user = getUser(socket.id);
+        //If the user does not exist, the callback will be returned, preventing the server from crashing
+        if(!user){
+           return callback(true); 
+        }
+        socket.join(user.room);
         //create an message object with who sent it, the message itself and when it was sent
-        message = formatMessages(username, message.text);
+        message = formatMessages(user.username, message.text);
         //When a new message is sent by an user, it will be sent to all other users
-        io.to(room).emit('newMessage', message);
+        io.to(user.room).emit('newMessage', message);
         callback(); //It tells the client that everything went well
     });
 
     //Listen for a shareLoc (share location) event. 
     socket.on('shareLoc', (pos, callback) => {
+        const user = getUser(socket.id);
+        //If the user does not exist, the callback will be returned, preventing the server from crashing
+        if(!user){
+            return callback(true);
+        }
         //get the username and from from getUser function
-        const {username, room} = getUser(socket.id);
-
+        const {username, room} = user;
+        
         socket.join(room);
         // When an user share its location it will be sent to the other users through an url
         io.to(room).emit('shareLocMsg', formatShareLoc(username, `https://www.google.com/maps?q=${pos.lat},${pos.lng}`));
@@ -58,8 +66,14 @@ io.on('connection', (socket) => {
     
     //Listen for an audioMsg event
     socket.on('audioMsg', (audioMsg, callback) => {
+        const user = getUser(socket.id);
+        //If the user does not exist, the callback will be returned, preventing the server from crashing
+        if(!user){
+            return callback(true);
+        }
+
         //get the username and from from getUser function
-        const {username, room} = getUser(socket.id);
+        const {username, room} = user;
         
         //make sure the message is sent only to the current room
         socket.join(room);
@@ -76,12 +90,13 @@ io.on('connection', (socket) => {
         }
 
         socket.join(user.room);
-        currentUser = username
         //When a new user joins the chat, a welcome message is sent to him
         socket.emit('newMessage', formatMessages('Admin', `Welcome ${user.username} :)`));
         //The following message will be shown to all users but the current one
         socket.broadcast.to(user.room).emit('newMessage', formatMessages('Admin', `${user.username} joined the chat!`));
-        
+        //This event will update the users' list on the client side
+        io.to(room).emit("roomData", {room: user.room, users: getUsersInRoom(user.room)});
+
         callback();
     });
 
