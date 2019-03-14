@@ -186,6 +186,10 @@ button:disabled {
 }
 
 @media only screen and (max-width: 600px) {
+    .chat{
+        overflow-y: hidden; 
+    }
+
     .chat__main{
         height: 100vh;
     }
