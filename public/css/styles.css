@@ -96,7 +96,7 @@ button:disabled {
     height: 100vh;
     color: white;
     background: #333744;
-    width: 225px;
+    width: 18%;
     overflow-y: scroll
 }
 
@@ -183,4 +183,18 @@ button:disabled {
     list-style-type: none;
     font-weight: 300;
     padding: 12px 24px 0 24px;
+}
+
+@media only screen and (max-width: 600px) {
+    .chat__main{
+        height: 100vh;
+    }
+    
+    .chat__sidebar{
+        display: none;
+    }
+
+    button#shareLoc, button#recordBt{
+        display: none;
+    }
 }
