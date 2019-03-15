@@ -194,6 +194,10 @@ button:disabled {
         height: 100vh;
     }
     
+    .chat__messages{
+        height: 100vh;
+    }
+    
     .chat__sidebar{
         display: none;
     }
