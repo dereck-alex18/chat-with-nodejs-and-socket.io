@@ -196,6 +196,7 @@ button:disabled {
     
     .chat__messages{
         height: 100vh;
+       
     }
     
     .chat__sidebar{

@@ -18,6 +18,13 @@ const sideBarTemplate = document.querySelector('#sidebar-template').innerHTML;
 //Get the username the the room that the user wants to join
 const {username, room} = Qs.parse(location.search, { ignoreQueryPrefix: true })
 
+window.addEventListener("load",function() {
+    setTimeout(function(){
+        // This hides the address bar:
+        window.scrollTo(0, 1);
+    }, 0);
+});
+
 
 //Listen for a click on submit button
 submitBt.addEventListener('click', (e) => {
