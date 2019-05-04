@@ -56,11 +56,23 @@ const getUsersInRoom = (room) => {
     //Return an array of users in the room
     return users.filter((user) => user.room === room);
 }
+//get all users in all rooms
+const allUsersInRoom = (rooms) => {
+    //loop through rooms object
+    for(index in rooms){
+        let roomName = index;
+        roomName = roomName.trim().toLowerCase();
+        //the length of the array returned by getUsersInRoom is the number of users in that particular room
+        rooms[index] = getUsersInRoom(roomName).length;
+    }
+    return rooms;
+}
 
 module.exports = {
     addUser,
     removeUser,
     getUser,
-    getUsersInRoom
+    getUsersInRoom,
+    allUsersInRoom
 }
 

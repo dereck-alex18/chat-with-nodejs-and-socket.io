@@ -3,7 +3,7 @@ const path = require('path');
 const socketIO = require('socket.io');
 const http = require('http');
 const {formatMessages, formatShareLoc, formatAudioMsg} = require('./utils/messages');
-const {addUser, removeUser, getUser, getUsersInRoom} = require('./utils/users');
+const {addUser, removeUser, getUser, getUsersInRoom, allUsersInRoom} = require('./utils/users');
 
 const app = express();
 //setting the port
@@ -88,16 +88,21 @@ io.on('connection', (socket) => {
         if(error){
             return callback(error);
         }
-
+        
         socket.join(user.room);
         //When a new user joins the chat, a welcome message is sent to him
         socket.emit('newMessage', formatMessages('Admin', `Welcome ${user.username} :)`));
         //The following message will be shown to all users but the current one
         socket.broadcast.to(user.room).emit('newMessage', formatMessages('Admin', `${user.username} joined the chat!`));
         //This event will update the users' list on the client side
-        io.to(room).emit("roomData", {room: user.room, users: getUsersInRoom(user.room)});
+        io.to(user.room).emit("roomData", {room: user.room, users: getUsersInRoom(user.room)});
 
         callback();
+    });
+    //Listen for getUsersInRoom event
+    socket.on("getUsersInRoom", (rooms) => {
+        //when it's fired, it returns all users in all rooms
+        socket.emit("getUsersInRoom", allUsersInRoom(rooms));
     });
 
 });

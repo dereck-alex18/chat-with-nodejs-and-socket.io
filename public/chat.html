@@ -31,14 +31,14 @@
 
         <!-- Mustache templates -->
         <script type="text/html" id="message-template">
-            <div class="message">
-                <p>
-                    <span class="message__name">{{user}}</span>
-                    <span class="message__meta">{{createdAt}}</span>
-                </p>
-                <p>{{message}}</p>
-
-            </div>
+            
+                <div class="{{class}}">
+                    <p>
+                        <span class="message__name">{{user}}</span>
+                        <span class="message__meta__user">{{createdAt}}</span>
+                    </p>
+                    <p class="user__message">{{message}}</p>
+                </div>
         </script>
 
         <script type="text/html" id="loc-template">
@@ -48,6 +48,7 @@
                     <span class="message__meta">{{createdAt}}</span>
                 </p>
                 <p><a href={{url}} target="_blank">My current location</a></p>
+                
             </div>
         </script>
 

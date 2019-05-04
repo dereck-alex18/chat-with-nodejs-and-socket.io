@@ -17,10 +17,19 @@
                 <label>Display name</label>
                 <input type="text" placeholder="Username" name="username" required>
                 <label>Room</label>
-                <input type="text" placeholder="Room" name="room" required>
+                <!-- <input type="text" name="room"> -->
+                <select class="select-rooms" id="rooms" name="room" required>
+                    <option value="" disabled selected hidden>Select your room</option>
+                    <!-- <option id="sweetRiver">Sweet River</option>
+                    <option id="atlanticGarden">Atlantic Garden</option>
+                    <option id="littleFish">Little Fish</option>
+                    <option id="yellowHouse">Yellow House</option> -->
+                </select>
                 <button>Join</button>
            </form>
        </div>
    </div>
+   <script src="socket.io/socket.io.js"></script>
+   <script src="js/join.js"></script>
 </body>
 </html>

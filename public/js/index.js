@@ -18,14 +18,6 @@ const sideBarTemplate = document.querySelector('#sidebar-template').innerHTML;
 //Get the username the the room that the user wants to join
 const {username, room} = Qs.parse(location.search, { ignoreQueryPrefix: true })
 
-window.addEventListener("load",function() {
-    setTimeout(function(){
-        // This hides the address bar:
-        window.scrollTo(0, 1);
-    }, 0);
-});
-
-
 //Listen for a click on submit button
 submitBt.addEventListener('click', (e) => {
     e.preventDefault();
@@ -90,10 +82,18 @@ socket.on('disconnect', function() {
 
 //it's fired when a new message from other user is sent to the server
 socket.on('newMessage', function(message){
-    console.log("New message received!");
+    let user, msgClass;
+    if(username === message.from){
+        user = "you";
+        msgClass = "currentUser__msg";
+    }else{
+        user = message.from;
+        msgClass = "otherUsers__msg";
+    }
    //The lines bellow insert the message in the message-box by redering the Mustache template
     const html = Mustache.render(msgTemplate, {
-        user: (message.from !== username) ? message.from : "you",
+        class: msgClass,
+        user,
         message: message.text,
         createdAt: moment(message.createdAt).format('h:mm a')
     });
@@ -167,7 +167,7 @@ function recordAudioMsg(){
         gumStream.getAudioTracks()[0].stop();
         audioChunks = [];
         recordBt.textContent = "Audio";
-        recordBt.style.background = "#7C5CBF"
+        recordBt.style.background = "#1ddced"
     } else {
         //Otherwise it starts the recording process
         recordBt.textContent = "Stop";
